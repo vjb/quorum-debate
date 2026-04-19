@@ -4,10 +4,10 @@
 
 Quorum Debate is a multi-agent evaluation engine engineered to process documents and orchestrate structured, sequential dialogue between language models. The architecture utilizes Next.js for the frontend client, LangGraph for state machine execution, and OpenRouter for model inference routing. 
 
-The system implements a Direct Context Injection strategy. When a user uploads a PDF or supported document, a dedicated Node.js background process extracts the binary data and parses the text. The extracted text is injected into the global context of the state graph, establishing a shared ground truth for the participating agents.
+When a user uploads a PDF or supported document, a dedicated Node.js background process extracts the binary data and parses the text. The extracted text is injected into the global context of the state graph, establishing a shared ground truth for the participating agents.
 
 ![Phase 1: Initial Configuration Interface](./public/screenshots/1.png)
-*Figure 1: The initial configuration interface where users define the global objective, select the routing topology, and upload documentation for Direct Context Injection.*
+*Figure 1: The initial configuration interface where users define the global objective, select the routing topology, and upload documentation for the debate.*
 
 ## Core Mechanisms
 
