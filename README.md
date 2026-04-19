@@ -42,7 +42,6 @@ npm run dev
 
 ## Known Limitations & Future Work
 
-* **Context Window Truncation:** The system relies on a rigid 10,000-character slice for Direct Context Injection. Documents exceeding this limit are truncated. Future iterations require an event-driven fallback to local embedding models for chunked vector retrieval.
 * **Synchronous Parsing Overhead:** The PDF extraction executes a blocking Node.js sub-process. High-volume concurrent uploads will degrade server response times. Moving extraction to a dedicated worker pool is necessary for horizontal scaling.
 * **State Mutation Risks:** The human interjection protocol modifies the `maxTurns` integer dynamically. In highly nested topologies, this could cause race conditions if multiple users interject concurrently on the same session state.
 
