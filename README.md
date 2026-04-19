@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-Quorum Debate is a multi-agent evaluation engine engineered to process documents and orchestrate deterministic dialogue between language models. The architecture utilizes Next.js for the frontend client, LangGraph for state machine execution, and OpenRouter for model inference routing. 
+Quorum Debate is a multi-agent evaluation engine engineered to process documents and orchestrate structured, sequential dialogue between language models. The architecture utilizes Next.js for the frontend client, LangGraph for state machine execution, and OpenRouter for model inference routing. 
 
 The system implements a Direct Context Injection strategy. When a user uploads a PDF or supported document, a dedicated Node.js background process extracts the binary data and parses the text. The extracted text is injected into the global context of the state graph, establishing a shared ground truth for the participating agents.
 
@@ -26,7 +26,7 @@ Knowledge is categorized strictly into two tiers during the initialization phase
 The protocol supports human-in-the-loop interjections via the `/api/debate/[thread_id]/steer` endpoint. When a user injects a payload, the system utilizes the `asNode` parameter within LangGraph's `updateState` function. This forces the state machine to re-evaluate its conditional edges as if an agent node had just completed execution, ensuring the human message is processed by the next sequential agent in the topology rather than routing directly to the summarizer.
 
 ![Phase 2: Active Debate Execution](./public/screenshots/2.png)
-*Figure 2: The mid-run execution state. The State Graph cycles through the configured agents, routing messages and executing the deterministic consensus protocol.*
+*Figure 2: The mid-run execution state. The State Graph cycles through the configured agents, routing messages and executing the probabilistic consensus protocol.*
 
 ## Step 0: Environment Configuration
 
