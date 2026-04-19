@@ -45,5 +45,3 @@ npm run dev
 * **Synchronous Parsing Overhead:** The PDF extraction executes a blocking Node.js sub-process. High-volume concurrent uploads will degrade server response times. Moving extraction to a dedicated worker pool is necessary for horizontal scaling.
 * **State Mutation Risks:** The human interjection protocol modifies the `maxTurns` integer dynamically. In highly nested topologies, this could cause race conditions if multiple users interject concurrently on the same session state.
 
-![Phase 3: Consensus Synthesis](./public/screenshots/3.png)
-*Figure 3: The final terminal state (`summarizer` node). The system extracts and compiles the aggregated insights into a structured final report.*
