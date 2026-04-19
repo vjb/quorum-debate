@@ -6,7 +6,8 @@ Quorum Debate is a multi-agent evaluation engine engineered to process documents
 
 The system implements a Direct Context Injection strategy. When a user uploads a PDF or supported document, a dedicated Node.js background process extracts the binary data and parses the text. The first 10,000 characters are injected into the global context of the state graph, establishing a shared ground truth for the participating agents.
 
-![Quorum Debate Interface - View 1](./public/screenshot1.png)
+![Phase 1: Initial Configuration Interface](./public/screenshots/1.png)
+*Figure 1: The initial configuration interface where users define the global objective, select the routing topology, and upload documentation for Direct Context Injection.*
 
 ## Core Mechanisms
 
@@ -16,7 +17,8 @@ The orchestration layer is built on LangGraph. The debate is modeled as a cyclic
 ### Asynchronous Steering
 The protocol supports human-in-the-loop interjections via the `/api/debate/[thread_id]/steer` endpoint. When a user injects a payload, the system utilizes the `asNode` parameter within LangGraph's `updateState` function. This forces the state machine to re-evaluate its conditional edges as if an agent node had just completed execution, ensuring the human message is processed by the next sequential agent in the topology rather than routing directly to the summarizer.
 
-![Quorum Debate Interface - View 2](./public/screenshot2.png)
+![Phase 2: Active Debate Execution](./public/screenshots/2.png)
+*Figure 2: The mid-run execution state. The State Graph cycles through the configured agents, routing messages and executing the deterministic consensus protocol.*
 
 ## Step 0: Environment Configuration
 
@@ -44,4 +46,5 @@ npm run dev
 * **Synchronous Parsing Overhead:** The PDF extraction executes a blocking Node.js sub-process. High-volume concurrent uploads will degrade server response times. Moving extraction to a dedicated worker pool is necessary for horizontal scaling.
 * **State Mutation Risks:** The human interjection protocol modifies the `maxTurns` integer dynamically. In highly nested topologies, this could cause race conditions if multiple users interject concurrently on the same session state.
 
-![Quorum Debate Interface - View 3](./public/screenshot3.png)
+![Phase 3: Consensus Synthesis](./public/screenshots/3.png)
+*Figure 3: The final terminal state (`summarizer` node). The system extracts and compiles the aggregated insights into a structured final report.*

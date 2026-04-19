@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { checkpointer } from '@/lib/langgraph/graph';
 import { HumanMessage } from '@langchain/core/messages';
 import { parseDocument } from '@/lib/rag/parser';
-import { getPineconeStore } from '@/lib/rag/pinecone';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -55,15 +54,6 @@ export async function POST(
             const content = await parseDocument(tempPath);
             if (content) {
               parsedTextContent += `\n\n[Injected File: ${file.name}]:\n${content}`;
-              
-              // Also upload to Pinecone for RAG
-              const store = await getPineconeStore();
-              if (store) {
-                await store.addDocuments([{
-                  pageContent: content,
-                  metadata: { source: file.name, thread_id: params.thread_id }
-                }]);
-              }
             }
           } catch (e) {
             console.error(`Failed to parse ${file.name}:`, e);

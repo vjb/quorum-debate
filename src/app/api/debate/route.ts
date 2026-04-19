@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createDebateGraph, checkpointer } from '@/lib/langgraph/graph';
 import { parseDocument } from '@/lib/rag/parser';
-import { getPineconeStore } from '@/lib/rag/pinecone';
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { getChatModel } from '@/lib/langgraph/agents';
 import { getPastReflections, saveReflection } from '@/lib/memory/db';
@@ -66,8 +65,6 @@ export async function POST(req: NextRequest) {
     logger.debug(`Found ${globalFiles.length} global files to process`);
     const tmpDir = os.tmpdir();
 
-    const globalStore = await getPineconeStore(`${thread_id}_global`);
-    
     // For vision
 
     let allExtractedText = "";
@@ -112,7 +109,6 @@ export async function POST(req: NextRequest) {
       const conf = agentsConf[i];
       const agentFiles = formData.getAll(`agent_${i}_files`) as File[];
       
-      const agentStore = await getPineconeStore(`${thread_id}_agent_${i}`);
       let hasFiles = false;
       let agentImages: any[] = [];
 

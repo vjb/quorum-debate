@@ -1,7 +1,7 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { DebateState } from "./state";
-import { getPineconeStore } from "../rag/pinecone";
+import { DebateState } from "./state";
 
 export function getChatModel(modelName: string = "openai/gpt-4o-mini") {
   return new ChatOpenAI({
@@ -28,29 +28,12 @@ export async function invokeAgent(state: typeof DebateState.State, agentIndex: n
   
   let additionalContext = "";
   if (thread_id) {
-    try {
-      const globalStore = await getPineconeStore(`${thread_id}_global`);
-      const agentStore = await getPineconeStore(`${thread_id}_agent_${agentIndex}`);
-      
-      const lastMessage = state.messages[state.messages.length - 1];
-      let query = lastMessage && lastMessage.content ? lastMessage.content.toString() : state.globalTask;
-      
-      // If the query is too short or generic, augment it with the global task
-      if (query.length < 20) {
-        query = `${state.globalTask} ${query}`;
-      }
-      
-      const globalResults = await globalStore.similaritySearch(query, 5);
-      const agentResults = await agentStore.similaritySearch(query, 5);
-      
-      if (globalResults.length > 0) {
-        additionalContext += `\n\n[UPLOADED GLOBAL KNOWLEDGE]:\n${globalResults.map(r => r.pageContent).join('\n')}`;
-      }
-      if (agentResults.length > 0) {
-        additionalContext += `\n\n[YOUR SPECIFIC KNOWLEDGE]:\n${agentResults.map(r => r.pageContent).join('\n')}`;
-      }
-    } catch (e) {
-      console.error("RAG Error", e);
+    const lastMessage = state.messages[state.messages.length - 1];
+    let query = lastMessage && lastMessage.content ? lastMessage.content.toString() : state.globalTask;
+    
+    // If the query is too short or generic, augment it with the global task
+    if (query.length < 20) {
+      query = `${state.globalTask} ${query}`;
     }
   }
 
