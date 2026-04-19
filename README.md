@@ -1,32 +1,29 @@
 # Quorum Debate Protocol
 
-## Architecture Overview
+## Project Vision
 
-Quorum Debate is a multi-agent evaluation engine engineered to process documents and orchestrate structured, sequential dialogue between language models. The architecture utilizes Next.js for the frontend client, LangGraph for state machine execution, and OpenRouter for model inference routing. 
+Quorum Debate explores the concept of multi-agent collaboration. Rather than relying on a single language model to evaluate a complex document or strategy, this project orchestrates a "jury" of distinct AI personas. By assigning specific expertise, biases, and goals to different agents, the system simulates a structured debate. The agents collaborate, critique each other's reasoning, and ultimately synthesize a consensus that is more robust than any single model's isolated output.
 
-When a user uploads a PDF or supported document, a dedicated Node.js background process extracts the binary data and parses the text. The extracted text is injected into the global context of the state graph, establishing a shared ground truth for the participating agents.
+The current codebase serves as a simple, foundational implementation of this broader idea.
 
 ![Phase 1: Initial Configuration Interface](./public/screenshots/1.png)
 *Figure 1: The initial configuration interface where users define the global objective, select the routing topology, and upload documentation for the debate.*
 
-## Core Mechanisms
+## Collaborative Mechanisms
 
-### State Graph Routing
-The orchestration layer is built on LangGraph. The debate is modeled as a cyclic state machine. The state object (`DebateState`) tracks the `turnCount`, active `messages`, and the array of `agents`. Conditional edges determine routing based on `turnCount` evaluated against the `maxTurns` integer. When the threshold is reached, execution routes to the `summarizer` node for consensus aggregation.
+### The Debate Topology
+In a multi-agent system, the order in which agents speak (the topology) fundamentally changes the outcome. This implementation uses a sequential round-robin approach. Agent A speaks, Agent B reviews Agent A's point and adds its own perspective, and so on. This allows for cumulative reasoning, where each subsequent agent builds upon or tears down the prior arguments.
 
-### Topology and Persona Configuration
-The system relies on user-defined configurations to instantiate the debate topology. The frontend client passes an array of persona definitions (including identifier, base model, and system prompt). The LangGraph workflow dynamically maps these personas to discrete nodes, configuring a strict sequence by linking the output edge of `Agent N` to the input edge of `Agent N+1`, creating a continuous round-robin evaluation loop.
+### Asymmetric Knowledge Distribution
+To simulate real-world collaboration, agents don't always need to share the exact same context. The system allows for:
+- **Global Knowledge:** Foundational documents provided to all agents to establish a shared ground truth.
+- **Agent-Specific Knowledge:** Private documents given only to specific personas (e.g., providing a Financial Expert with raw budgetary data while keeping the general Facilitator focused only on high-level strategy). This forces the agents to communicate their unique findings to the group.
 
-### Global vs. Agent-Specific Knowledge
-Knowledge is categorized strictly into two tiers during the initialization phase:
-- **Global Knowledge:** Documents uploaded at the root level. This data is extracted and injected into the universal context string, establishing the primary factual baseline for all participating agents.
-- **Agent-Specific Knowledge:** Files mapped explicitly to an individual persona. This context is isolated within that specific agent's prompt generation logic, enabling asymmetric information architectures (e.g., providing a Financial Expert with private budgetary data while the Facilitator remains blind to it).
-
-### Asynchronous Steering
-The protocol supports human-in-the-loop interjections via the `/api/debate/[thread_id]/steer` endpoint. When a user injects a payload, the system utilizes the `asNode` parameter within LangGraph's `updateState` function. This forces the state machine to re-evaluate its conditional edges as if an agent node had just completed execution, ensuring the human message is processed by the next sequential agent in the topology rather than routing directly to the summarizer.
+### Human-in-the-Loop Steering
+Multi-agent systems can sometimes veer off course or reach premature conclusions. Quorum Debate includes asynchronous steering, allowing a human evaluator to interject mid-debate. When the human speaks, the agents are forced to pause, absorb the new feedback, and re-evaluate their positions before moving toward a final consensus.
 
 ![Phase 2: Active Debate Execution](./public/screenshots/2.png)
-*Figure 2: The mid-run execution state. The State Graph cycles through the configured agents, routing messages and executing the probabilistic consensus protocol.*
+*Figure 2: The mid-run execution state. The system cycles through the configured agents, routing messages and executing the collaborative debate.*
 
 ## Step 0: Environment Configuration
 
@@ -47,9 +44,3 @@ npm run dev
 ```
 
 3. Access the interface at `http://localhost:3000`.
-
-## Known Limitations & Future Work
-
-* **Synchronous Parsing Overhead:** The PDF extraction executes a blocking Node.js sub-process. High-volume concurrent uploads will degrade server response times. Moving extraction to a dedicated worker pool is necessary for horizontal scaling.
-* **State Mutation Risks:** The human interjection protocol modifies the `maxTurns` integer dynamically. In highly nested topologies, this could cause race conditions if multiple users interject concurrently on the same session state.
-
