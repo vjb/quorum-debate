@@ -14,6 +14,14 @@ The system implements a Direct Context Injection strategy. When a user uploads a
 ### State Graph Routing
 The orchestration layer is built on LangGraph. The debate is modeled as a cyclic state machine. The state object (`DebateState`) tracks the `turnCount`, active `messages`, and the array of `agents`. Conditional edges determine routing based on `turnCount` evaluated against the `maxTurns` integer. When the threshold is reached, execution routes to the `summarizer` node for consensus aggregation.
 
+### Topology and Persona Configuration
+The system relies on user-defined configurations to instantiate the debate topology. The frontend client passes an array of persona definitions (including identifier, base model, and system prompt). The LangGraph workflow dynamically maps these personas to discrete nodes, configuring a strict sequence by linking the output edge of `Agent N` to the input edge of `Agent N+1`, creating a continuous round-robin evaluation loop.
+
+### Global vs. Agent-Specific Knowledge
+Knowledge is categorized strictly into two tiers during the initialization phase:
+- **Global Knowledge:** Documents uploaded at the root level. This data is extracted and injected into the universal context string, establishing the primary factual baseline for all participating agents.
+- **Agent-Specific Knowledge:** Files mapped explicitly to an individual persona. This context is isolated within that specific agent's prompt generation logic, enabling asymmetric information architectures (e.g., providing a Financial Expert with private budgetary data while the Facilitator remains blind to it).
+
 ### Asynchronous Steering
 The protocol supports human-in-the-loop interjections via the `/api/debate/[thread_id]/steer` endpoint. When a user injects a payload, the system utilizes the `asNode` parameter within LangGraph's `updateState` function. This forces the state machine to re-evaluate its conditional edges as if an agent node had just completed execution, ensuring the human message is processed by the next sequential agent in the topology rather than routing directly to the summarizer.
 
